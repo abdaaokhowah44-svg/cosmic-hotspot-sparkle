@@ -13,8 +13,8 @@ const Index = () => {
     setIsConnected(true);
     
     toast({
-      title: "Connection Successful!",
-      description: `Welcome ${credentials.username}. You're now connected to the network.`,
+      title: "تم الاتصال بنجاح!",
+      description: `مرحباً ${credentials.username}. أنت متصل الآن بالشبكة.`,
     });
   };
 
@@ -23,8 +23,8 @@ const Index = () => {
     setUserCredentials(null);
     
     toast({
-      title: "Disconnected",
-      description: "You have been disconnected from the network.",
+      title: "تم قطع الاتصال",
+      description: "تم قطع اتصالك من الشبكة.",
       variant: "destructive",
     });
   };

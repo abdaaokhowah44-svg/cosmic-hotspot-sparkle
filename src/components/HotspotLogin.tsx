@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Wifi, Shield, Globe, Clock, Users, Zap } from 'lucide-react';
+import { Wifi, Shield, Globe, Clock, Users, Zap, HelpCircle } from 'lucide-react';
+import { HelpModal } from './HelpModal';
 import networkBg from '@/assets/network-bg.jpg';
 
 interface HotspotLoginProps {
@@ -16,6 +17,23 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load saved usernames
+  useEffect(() => {
+    const savedUsers = JSON.parse(localStorage.getItem('teranet-previous-users') || '[]');
+    if (savedUsers.length > 0) {
+      setUsername(savedUsers[0]); // Auto-fill with last used username
+    }
+  }, []);
+
+  // Listen for username fill events from help modal
+  useEffect(() => {
+    const handleFillUsername = (event: any) => {
+      setUsername(event.detail);
+    };
+    window.addEventListener('fillUsername', handleFillUsername);
+    return () => window.removeEventListener('fillUsername', handleFillUsername);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
@@ -24,6 +42,12 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
     }
     
     setIsLoading(true);
+    
+    // Save username to localStorage for future use
+    const savedUsers = JSON.parse(localStorage.getItem('teranet-previous-users') || '[]');
+    const updatedUsers = [username, ...savedUsers.filter((u: string) => u !== username)].slice(0, 5);
+    localStorage.setItem('teranet-previous-users', JSON.stringify(updatedUsers));
+    
     // Simulate login process
     await new Promise(resolve => setTimeout(resolve, 2000));
     
@@ -32,18 +56,19 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
   };
 
   const features = [
-    { icon: Wifi, title: 'High-Speed Wi-Fi', description: 'Blazing fast internet connectivity' },
-    { icon: Shield, title: 'Secure Connection', description: 'Enterprise-grade security protocols' },
-    { icon: Globe, title: 'Global Access', description: 'Connect from anywhere in the venue' },
-    { icon: Clock, title: '24/7 Availability', description: 'Round-the-clock network access' },
-    { icon: Users, title: 'Multiple Devices', description: 'Connect all your devices seamlessly' },
-    { icon: Zap, title: 'Instant Connection', description: 'Quick and easy authentication' },
+    { icon: Wifi, title: 'واي فاي عالي السرعة', description: 'اتصال إنترنت فائق السرعة' },
+    { icon: Shield, title: 'اتصال آمن', description: 'بروتوكولات أمان على مستوى المؤسسات' },
+    { icon: Globe, title: 'وصول عالمي', description: 'اتصل من أي مكان في المنطقة' },
+    { icon: Clock, title: 'متاح ٢٤/٧', description: 'وصول للشبكة على مدار الساعة' },
+    { icon: Users, title: 'أجهزة متعددة', description: 'اربط جميع أجهزتك بسلاسة' },
+    { icon: Zap, title: 'اتصال فوري', description: 'مصادقة سريعة وسهلة' },
   ];
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative font-cairo"
       style={{ backgroundImage: `url(${networkBg})` }}
+      dir="rtl"
     >
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-primary/20" />
@@ -65,16 +90,16 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                 <div className="bg-gradient-primary p-3 rounded-xl shadow-glow">
                   <Wifi className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-4xl lg:text-5xl font-bold ml-4 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                  MikroTik
+                <h1 className="text-4xl lg:text-5xl font-bold mr-4 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                  تيرا نت
                 </h1>
               </div>
               <h2 className="text-2xl lg:text-3xl font-semibold mb-4 text-foreground">
-                Welcome to Premium Wi-Fi
+                مرحباً بك في شبكة تيرا نت المتميزة
               </h2>
-              <p className="text-muted-foreground text-lg mb-8">
-                Experience lightning-fast internet with enterprise-grade security. 
-                Connect instantly and enjoy seamless browsing.
+              <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
+                استمتع بإنترنت فائق السرعة مع أمان على مستوى المؤسسات.
+                اتصل فوراً واستمتع بتصفح سلس وآمن.
               </p>
             </div>
 
@@ -89,9 +114,9 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                   <div className="bg-primary/10 p-2 rounded-lg">
                     <feature.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
+                  <div className="text-right">
                     <h3 className="font-semibold text-sm text-foreground">{feature.title}</h3>
-                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               ))}
@@ -105,37 +130,37 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                 <div className="bg-gradient-primary p-4 rounded-full inline-block mb-4 shadow-glow">
                   <Globe className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">Connect to Wi-Fi</h3>
-                <p className="text-muted-foreground">Enter your credentials to get online</p>
+                <h3 className="text-2xl font-bold text-foreground mb-2">الاتصال بالواي فاي</h3>
+                <p className="text-muted-foreground">أدخل بياناتك للاتصال بالإنترنت</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
-                      Username or Email
+                    <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2 text-right">
+                      اسم المستخدم أو البريد الإلكتروني
                     </label>
                     <Input
                       id="username"
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter your username"
+                      placeholder="أدخل اسم المستخدم"
                       className="bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background/70 transition-all duration-300"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-                      Password or Voucher Code
+                    <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2 text-right">
+                      كلمة المرور أو رمز القسيمة
                     </label>
                     <Input
                       id="password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder="أدخل كلمة المرور"
                       className="bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background/70 transition-all duration-300"
                       required
                     />
@@ -149,14 +174,14 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                     onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
                     className="border-border/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
-                  <label htmlFor="terms" className="text-sm text-muted-foreground">
-                    I accept the{' '}
+                  <label htmlFor="terms" className="text-sm text-muted-foreground text-right">
+                    أوافق على{' '}
                     <button type="button" className="text-primary hover:underline">
-                      Terms & Conditions
+                      الشروط والأحكام
                     </button>
-                    {' '}and{' '}
+                    {' '}و{' '}
                     <button type="button" className="text-primary hover:underline">
-                      Privacy Policy
+                      سياسة الخصوصية
                     </button>
                   </label>
                 </div>
@@ -171,21 +196,27 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Connecting...</span>
+                      <span>جاري الاتصال...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
                       <Wifi className="w-4 h-4" />
-                      <span>Connect Now</span>
+                      <span>اتصل الآن</span>
                     </div>
                   )}
                 </Button>
 
-                <div className="text-center">
+                <div className="flex justify-between items-center">
+                  <HelpModal>
+                    <Button type="button" variant="outline" size="sm" className="gap-2">
+                      <HelpCircle className="w-4 h-4" />
+                      مساعدة
+                    </Button>
+                  </HelpModal>
                   <p className="text-xs text-muted-foreground">
-                    Need help? Contact{' '}
+                    تحتاج مساعدة؟ اتصل بـ{' '}
                     <button type="button" className="text-primary hover:underline">
-                      technical support
+                      الدعم الفني
                     </button>
                   </p>
                 </div>
@@ -193,7 +224,7 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
 
               {/* Social Login Options */}
               <div className="mt-6 pt-6 border-t border-border/50">
-                <p className="text-center text-sm text-muted-foreground mb-4">Or connect with</p>
+                <p className="text-center text-sm text-muted-foreground mb-4">أو اتصل باستخدام</p>
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="glass" size="sm" className="w-full">
                     <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -202,13 +233,13 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    Google
+                    جوجل
                   </Button>
                   <Button variant="glass" size="sm" className="w-full">
                     <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                    Facebook
+                    فيسبوك
                   </Button>
                 </div>
               </div>
@@ -221,11 +252,11 @@ export const HotspotLogin: React.FC<HotspotLoginProps> = ({ onLogin }) => {
       <div className="absolute bottom-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border/50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-muted-foreground">
-            <p>© 2024 MikroTik Hotspot. All rights reserved.</p>
-            <div className="flex space-x-4 mt-2 sm:mt-0">
-              <button className="hover:text-primary transition-colors">Privacy</button>
-              <button className="hover:text-primary transition-colors">Terms</button>
-              <button className="hover:text-primary transition-colors">Support</button>
+            <p>© ٢٠٢٤ شبكة تيرا نت. جميع الحقوق محفوظة.</p>
+            <div className="flex space-x-4 space-x-reverse mt-2 sm:mt-0">
+              <button className="hover:text-primary transition-colors">الخصوصية</button>
+              <button className="hover:text-primary transition-colors">الشروط</button>
+              <button className="hover:text-primary transition-colors">الدعم</button>
             </div>
           </div>
         </div>
